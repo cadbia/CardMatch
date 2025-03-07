@@ -1,45 +1,54 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, RefreshCw } from 'lucide-react';
 import { fetchDashboardData } from '../services/api';
-
-interface CardData {
-  id: string;
-  name: string;
-  provider: string;
-  category: string;
-  matchScore: number;
-}
+import { Card } from '../types';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [cards, setCards] = useState<CardData[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [error, setError] = useState('');
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      const data = await fetchDashboardData();
+      setCards(data);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      setError('Failed to load recommendations. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        // In a real app, this would be an actual API call
-        const data = await fetchDashboardData();
-        setCards(data);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadData();
   }, []);
+
+  const handleRefresh = () => {
+    loadData();
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Your Dashboard</h1>
-        <button className="flex items-center text-sm text-indigo-600 hover:text-indigo-800">
-          <RefreshCw className="h-4 w-4 mr-1" />
+        <button 
+          className="flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh Matches
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-8">
+          {error}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">

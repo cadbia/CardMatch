@@ -1,6 +1,6 @@
-# CardMatch - Frontend Application
+# CardMatch - Credit Card Recommendation Application
 
-CardMatch is a React-based web application that helps users find the perfect credit card based on their preferences and spending habits. This frontend provides a clean, responsive interface for users to interact with the card matching service.
+CardMatch is a full-stack MERN (MongoDB, Express, React, Node.js) application that helps users find the perfect credit card based on their preferences and spending habits.
 
 ## Table of Contents
 
@@ -10,6 +10,7 @@ CardMatch is a React-based web application that helps users find the perfect cre
 - [Getting Started](#getting-started)
 - [Development](#development)
 - [Building for Production](#building-for-production)
+- [API Documentation](#api-documentation)
 
 ## Project Overview
 
@@ -19,105 +20,102 @@ Key features:
 - User authentication (login/signup)
 - Dashboard with personalized card recommendations
 - Responsive design for all device sizes
+- RESTful API for card data and user management
 
 ## File Structure
 
 ```
-card-match-frontend/
-├── public/               # Static assets
-├── src/                  # Source code
-│   ├── components/       # Reusable UI components
-│   │   └── Navbar.tsx    # Navigation component
-│   ├── pages/            # Page components
-│   │   ├── Dashboard.tsx # User dashboard with card recommendations
-│   │   ├── LandingPage.tsx # Home page
-│   │   ├── LoginPage.tsx # Authentication page
-│   │   └── NotFound.tsx  # 404 page
-│   ├── services/         # API and service functions
-│   │   └── api.ts        # API client setup and functions
-│   ├── types/            # TypeScript type definitions
-│   │   └── index.ts      # Shared type definitions
-│   ├── App.tsx           # Main application component with routing
-│   ├── index.css         # Global styles (Tailwind imports)
-│   ├── main.tsx          # Application entry point
-│   └── vite-env.d.ts     # Vite type definitions
-├── .eslintrc.js          # ESLint configuration
-├── index.html            # HTML entry point
-├── package.json          # Project dependencies and scripts
-├── postcss.config.js     # PostCSS configuration for Tailwind
-├── tailwind.config.js    # Tailwind CSS configuration
-├── tsconfig.json         # TypeScript configuration
-└── vite.config.ts        # Vite bundler configuration
+card-match/
+├── server/                # Backend code
+│   ├── controllers/       # Route controllers
+│   ├── models/            # Mongoose models
+│   ├── routes/            # API routes
+│   ├── middleware/        # Custom middleware
+│   ├── data/              # Seed data
+│   └── index.js           # Server entry point
+├── src/                   # Frontend code
+│   ├── components/        # Reusable UI components
+│   ├── pages/             # Page components
+│   ├── services/          # API client and services
+│   ├── types/             # TypeScript type definitions
+│   ├── App.tsx            # Main application component
+│   ├── index.css          # Global styles
+│   └── main.tsx           # Frontend entry point
+├── .env                   # Environment variables
+├── package.json           # Project dependencies and scripts
+├── vite.config.ts         # Vite configuration
+└── README.md              # Project documentation
 ```
-
-### Key Directories and Files
-
-- **components/**: Reusable UI components used across multiple pages
-- **pages/**: Top-level page components that correspond to routes
-- **services/**: API client and service functions for data fetching
-- **types/**: TypeScript type definitions for better code quality
-- **App.tsx**: Main component with routing configuration
-- **main.tsx**: Application entry point that renders the App component
 
 ## Technologies Used
 
-- **React**: UI library for building the user interface
-- **TypeScript**: For type safety and better developer experience
-- **React Router**: For navigation and routing
-- **Tailwind CSS**: For styling and responsive design
-- **Axios**: For API requests
-- **Vite**: For fast development and optimized builds
-- **Lucide React**: For icons
+### Frontend
+- React with TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- Axios for API requests
+- Vite for development and building
+
+### Backend
+- Node.js with Express
+- MongoDB with Mongoose
+- JWT for authentication
+- bcrypt for password hashing
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (v16 or later)
+- MongoDB (local or Atlas)
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/card-match-frontend.git
-   cd card-match-frontend
+   git clone https://github.com/your-username/card-match.git
+   cd card-match
    ```
 
 2. Install dependencies:
    ```bash
    npm install
-   # or
-   yarn
    ```
 
-3. Start the development server:
+3. Set up environment variables:
+   - Create a `.env` file in the root directory
+   - Add the following variables:
+     ```
+     PORT=5000
+     NODE_ENV=development
+     MONGODB_URI=mongodb://localhost:27017/cardmatch
+     JWT_SECRET=your_jwt_secret_key_change_in_production
+     JWT_EXPIRES_IN=7d
+     ```
+
+4. Seed the database:
    ```bash
-   npm run dev
-   # or
-   yarn dev
+   node server/data/seed.js
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Start the development servers:
+   ```bash
+   npm run dev:full
+   ```
+
+6. Open your browser and navigate to `http://localhost:5173`
 
 ## Development
 
 ### Available Scripts
 
-- `npm run dev`: Start the development server
-- `npm run build`: Build the application for production
+- `npm run dev`: Start the frontend development server
+- `npm run server`: Start the backend server
+- `npm run dev:server`: Start the backend server with nodemon (auto-restart)
+- `npm run dev:full`: Start both frontend and backend servers concurrently
+- `npm run build`: Build the frontend for production
 - `npm run lint`: Run ESLint to check for code issues
-- `npm run preview`: Preview the production build locally
-
-### Adding New Features
-
-When adding new features:
-
-1. Create new components in the `components/` directory if they're reusable
-2. Create new pages in the `pages/` directory if they represent a new route
-3. Add new routes in `App.tsx`
-4. Add new API functions in `services/api.ts`
-5. Add new types in `types/index.ts`
 
 ## Building for Production
 
@@ -125,16 +123,52 @@ To build the application for production:
 
 ```bash
 npm run build
-# or
-yarn build
 ```
 
-This will create a `dist` directory with the optimized production build. You can then deploy this directory to your hosting provider of choice.
-
-For a local preview of the production build:
+This will create a `dist` directory with the optimized frontend build. The backend can be started with:
 
 ```bash
-npm run preview
-# or
-yarn preview
+npm run server
 ```
+
+In production, the Express server will serve the static frontend files from the `dist` directory.
+
+## API Documentation
+
+### Authentication
+
+- `POST /api/auth/register`: Register a new user
+  - Body: `{ name, email, password }`
+  - Returns: User object and JWT token
+
+- `POST /api/auth/login`: Login
+  - Body: `{ email, password }`
+  - Returns: User object and JWT token
+
+- `GET /api/auth/me`: Get current user
+  - Headers: `Authorization: Bearer <token>`
+  - Returns: User object
+
+### Cards
+
+- `GET /api/cards`: Get all cards
+  - Returns: Array of card objects
+
+- `GET /api/cards/:id`: Get a specific card
+  - Returns: Card object
+
+- `GET /api/cards/recommendations`: Get personalized card recommendations
+  - Headers: `Authorization: Bearer <token>`
+  - Returns: Array of card objects with match scores
+
+### Users
+
+- `PUT /api/users/profile`: Update user profile
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ name, email }`
+  - Returns: Updated user object
+
+- `PUT /api/users/preferences`: Update user preferences
+  - Headers: `Authorization: Bearer <token>`
+  - Body: `{ categories, annualFeePreference, creditScoreRange }`
+  - Returns: Updated preferences object
