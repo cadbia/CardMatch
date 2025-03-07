@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { Card, ApiResponse, LoginResponse, User } from '../types';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: '/api', // This would be your actual API base URL in production
+  baseURL: import.meta.env.DEV ? 'http://localhost:5000/api' : '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -53,66 +54,90 @@ api.interceptors.response.use(
   }
 );
 
-// Mock API functions
+// Auth API functions
+export const register = async (name: string, email: string, password: string): Promise<LoginResponse> => {
+  return api.post('/auth/register', { name, email, password });
+};
+
+export const login = async (email: string, password: string): Promise<LoginResponse> => {
+  return api.post('/auth/login', { email, password });
+};
+
+export const getCurrentUser = async (): Promise<ApiResponse<User>> => {
+  return api.get('/auth/me');
+};
+
+// Card API functions
+export const fetchCards = async (): Promise<ApiResponse<Card[]>> => {
+  return api.get('/cards');
+};
+
+export const fetchCardById = async (id: string): Promise<ApiResponse<Card>> => {
+  return api.get(`/cards/${id}`);
+};
+
+export const fetchCardRecommendations = async (): Promise<ApiResponse<Card[]>> => {
+  return api.get('/cards/recommendations');
+};
+
+// User API functions
+export const updateUserProfile = async (userData: Partial<User>): Promise<ApiResponse<User>> => {
+  return api.put('/users/profile', userData);
+};
+
+export const updateUserPreferences = async (preferences: any): Promise<ApiResponse<any>> => {
+  return api.put('/users/preferences', preferences);
+};
 
 // Mock function to simulate fetching dashboard data
 export const fetchDashboardData = async () => {
-  // In a real app, this would be: return api.get('/dashboard');
+  // In development, use the mock data
+  if (import.meta.env.DEV && !localStorage.getItem('token')) {
+    // For now, return mock data after a short delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: '1',
+            name: 'Premium Rewards Card',
+            provider: 'Capital One',
+            category: 'Travel',
+            matchScore: 95,
+          },
+          {
+            id: '2',
+            name: 'Cash Back Preferred',
+            provider: 'Chase',
+            category: 'Cash Back',
+            matchScore: 88,
+          },
+          {
+            id: '3',
+            name: 'Student Rewards',
+            provider: 'Discover',
+            category: 'Student',
+            matchScore: 82,
+          },
+          {
+            id: '4',
+            name: 'Business Platinum',
+            provider: 'American Express',
+            category: 'Business',
+            matchScore: 75,
+          },
+        ]);
+      }, 1000);
+    });
+  }
   
-  // For now, return mock data after a short delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: '1',
-          name: 'Premium Rewards Card',
-          provider: 'Capital One',
-          category: 'Travel',
-          matchScore: 95,
-        },
-        {
-          id: '2',
-          name: 'Cash Back Preferred',
-          provider: 'Chase',
-          category: 'Cash Back',
-          matchScore: 88,
-        },
-        {
-          id: '3',
-          name: 'Student Rewards',
-          provider: 'Discover',
-          category: 'Student',
-          matchScore: 82,
-        },
-        {
-          id: '4',
-          name: 'Business Platinum',
-          provider: 'American Express',
-          category: 'Business',
-          matchScore: 75,
-        },
-      ]);
-    }, 1000);
-  });
-};
-
-// Mock login function
-export const login = async (email: string, password: string) => {
-  // In a real app, this would be: return api.post('/auth/login', { email, password });
-  
-  // For now, return mock data after a short delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        token: 'mock-jwt-token',
-        user: {
-          id: '123',
-          email,
-          name: 'Test User',
-        },
-      });
-    }, 800);
-  });
+  // If authenticated, use the real API
+  try {
+    const response = await fetchCardRecommendations();
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    throw error;
+  }
 };
 
 export default api;
