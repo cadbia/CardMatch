@@ -3,7 +3,7 @@ import { Card, ApiResponse, LoginResponse, User } from '../types';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: import.meta.env.DEV ? 'http://localhost:5000/api' : '/api',
+  baseURL: 'http://localhost:3000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<ApiRes
   return api.put('/users/profile', userData);
 };
 
-export const updateUserPreferences = async (preferences: any): Promise<ApiResponse<any>> => {
+export const updateUserPreferences = async (preferences: Partial<User>): Promise<ApiResponse<User>> => {
   return api.put('/users/preferences', preferences);
 };
 
