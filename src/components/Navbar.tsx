@@ -1,13 +1,21 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, CreditCard } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, CreditCard, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const isActive = (path: string) => {
@@ -37,26 +45,44 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link 
-              to="/login" 
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/login') 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-              }`}
-            >
-              Login
-            </Link>
-            <Link 
-              to="/dashboard" 
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive('/dashboard') 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-              }`}
-            >
-              Dashboard
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to="/dashboard" 
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive('/dashboard') 
+                      ? 'text-indigo-600 bg-indigo-50' 
+                      : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-gray-700">
+                    {user?.name}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Link 
+                to="/login" 
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  isActive('/login') 
+                    ? 'text-indigo-600 bg-indigo-50' 
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+              >
+                Login
+              </Link>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -92,28 +118,49 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/login"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive('/login') 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-              }`}
-              onClick={toggleMenu}
-            >
-              Login
-            </Link>
-            <Link
-              to="/dashboard"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive('/dashboard') 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-              }`}
-              onClick={toggleMenu}
-            >
-              Dashboard
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive('/dashboard') 
+                      ? 'text-indigo-600 bg-indigo-50' 
+                      : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                  }`}
+                  onClick={toggleMenu}
+                >
+                  Dashboard
+                </Link>
+                <div className="px-3 py-2">
+                  <span className="block text-sm text-gray-700 mb-2">
+                    {user?.name}
+                  </span>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      toggleMenu();
+                    }}
+                    className="flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-indigo-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/login') 
+                    ? 'text-indigo-600 bg-indigo-50' 
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+                onClick={toggleMenu}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}

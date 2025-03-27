@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { login, register } from '../services/api';
 
 const LoginPage = () => {
@@ -9,7 +10,18 @@ const LoginPage = () => {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
   const navigate = useNavigate();
+  const location = useLocation();
+  const auth = useAuth();
+  
+  type LocationState = {
+    from?: {
+      pathname?: string;
+    };
+  };
+  
+  const from = (location.state as LocationState)?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +42,21 @@ const LoginPage = () => {
         response = await register(name, email, password);
       }
       
-      // Store token in localStorage
-      localStorage.setItem('token', response.token);
-      
-      // Redirect to dashboard
-      navigate('/dashboard');
-    } catch (err: any) {
+      auth.login(response.token, response.user);
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
       console.error('Authentication error:', err);
-      setError(err.response?.data?.message || 'An error occurred during authentication');
+      
+      interface ApiError {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
+      }
+      
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || 'An error occurred during authentication');
     } finally {
       setIsLoading(false);
     }

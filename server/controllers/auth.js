@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -24,7 +25,11 @@ export const register = async (req, res, next) => {
     });
 
     // Generate token
-    const token = user.getSignedJwtToken();
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
 
     res.status(201).json({
       success: true,
@@ -74,7 +79,11 @@ export const login = async (req, res, next) => {
     }
 
     // Generate token
-    const token = user.getSignedJwtToken();
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
 
     res.status(200).json({
       success: true,
