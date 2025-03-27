@@ -40,6 +40,22 @@ const UserSchema = new mongoose.Schema({
       default: 'Good'
     }
   },
+  extraPreferences:{
+    //user must choose in order as follows: signbonus, apr, reward
+    signBonus:{
+      type: Boolean,
+      default: false
+    },
+    avgAPR:{
+      type: Number,
+      default: -1
+    },
+    rewardRate:{
+      type: String,
+      enum: ['Rotating', 'FlatRate', '-1'],
+      default: '-1'
+    }    
+  },
   createdAt: {
     type: Date,
     default: Date.now
