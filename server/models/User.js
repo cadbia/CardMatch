@@ -41,21 +41,53 @@ const UserSchema = new mongoose.Schema({
     }
   },
   extraPreferences:{
-    //user must choose in order as follows: signbonus, apr, reward
     signBonus:{
       type: Boolean,
-      default: false
+      default: Nan
     },
     avgAPR:{
       type: Number,
-      default: -1
+      default: Nan
     },
     rewardRate:{
       type: String,
-      enum: ['Rotating', 'FlatRate', '-1'],
-      default: '-1'
+      enum: ['Rotating', 'FlatRate'],
+      default: Nan
     }    
   },
+  //Holds the amount of importance for each preference. 4 being the most important, 0 the least. Defaults at 2 if not ranked.
+  rankedPref: [{
+    categories : {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    },
+    annualFeePreference: {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    },
+    creditScoreRange: {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    },
+    signBonus : {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    },
+    avgAPR : {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    },
+    rewardRate : {
+      type: Number,
+      enum: [0, 1, 2, 3, 4],
+      default: 2
+    }
+}],
   createdAt: {
     type: Date,
     default: Date.now

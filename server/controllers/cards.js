@@ -45,14 +45,6 @@ export const getCard = async (req, res, next) => {
 // @route   GET /api/cards/recommendations
 // @access  Private
 
-
-//NEED: User to have the following preferences: Can be an option so they do not have to select these, the first 3 can be default mandatory picks
-//apr - exceptional, good, average, no preference
-//rewards rate - flate-rate, category specific, no preference
-//sign up bonus- preferred, no preference
-//
-
-
 export const getRecommendations = async (req, res, next) => {
   try {
 
@@ -68,7 +60,7 @@ export const getRecommendations = async (req, res, next) => {
 
     // Build query based on preferences
     const cards = async (user) => {
-      query = {};
+      let query = {};
 
       if (user.preferences.categories && user.preferences.categories.length > 0) {
         query.category = { $in: user.preferences.categories };
@@ -100,90 +92,117 @@ export const getRecommendations = async (req, res, next) => {
       return cards;
     }
 
-
+    //const cardsData = await cards(user);
     // Calculate map of card to score based on compatibility, on a scale of 0-100, 100 being the most compatitable
     const recommendedCards = cards.map(card => {
-      //ranked should be filled in the following manner:
-        //if deciding to rank, first the first number in ranked must be turned to a 0, or off of 
 
-      //Default ranking, each factor is equally weighted. 
-        let exWeight = 3;
-        user.extraPreferences.forEach((preference)=>{
-          if(preference != -1 && preference!= 'signBonus'){
-            exWeight++;
-          }else if(preference === 'signBonus'){
-            if(preference === true) exWeight++;
-          }
-        })
-        let weight = 1/exWeight;
-        let ptsArr = [];
-        
-        switch (exWeight) {//4 means additionally sign, 5 is sign plus apr, 6 is sign plus par plus reward
-          case 6:
-            if(user.extraPreferences.rewardRate === card.rewardsRate){
-              ptsArr.push(1);
-            }else{
-              ptsArr.push(0);
-            }
-          case 5:
-            if(user.extraPreferences.avgAPR <= card.apr.max && user.extraPreferences.avgAPR >= card.apr.min){
-              ptsArr.push(1);
-            }else{
-              ptsArr.push(0);
-            }
-          case 4:
-            if(user.extraPreferences.signBonus === card.signUpBonus){
-              ptsArr.push(1);
-            }else{
-              ptsArr.push(0);
-            }
-          case 3:
+
+    //Find valid categories, and map each key to a weight and value
+      let amntPref = 3;
+      let totalWeight = 0;
+      //map each key to a weight and value for that weight(0-1)
+      const ValsToWeight = new Map();
+      Object.keys(user.preferences).forEach((key)=>{
+        let rankedVal = user.rankedPref.key;
+        totalWeight += rankedVal;
+        ValsToWeight.set(key, [rankedVal])
+      })
+      Object.keys(user.extraPreferences).forEach((key)=>{
+        if(!isNaN(key)){
+          let rankedVal = user.rankedPref.key;
+          totalWeight+= rankedVal;
+          ValsToWeight.set(key, [rankedVal])
+          amntPref++;
+        }
+      })
+
+      //pos 0 holds the amnt of ranked
+      //update each key with its respective weight, in pos[1] of arr key
+      //keys amount of respect on each weight is in pos[0] of arr key
+      
+      for(const key of ValsToWeight.keys()){
+        let WeightPerPts = 1/totalWeight;
+        WeightPerPts *= ValsToWeight.get(key)[0];
+        ValsToWeight.get(key).push(WeightPerPts);
+        //Now pos 1 holds weight. Not rep;ace pos 0 with the correct value
+        ValsToWeight.get(key)[0] = ()=>{
+          if(key === 'categories'){
             let favoredCat = user.preferences.categories.length;
             let enjoyed = 0;
             user.preferences.categories.forEach((cardCategory) => {
-              if (card.categories.includes(cardCategory)) {
+              if (card.category.includes(cardCategory)) {
                 enjoyed += 1;
               }
             })
-            if (enjoyed === 0) ptsArr.push(0);
-            else ptsArr.push(favoredCat / enjoyed);
-
+            if (enjoyed === 0) return 0;
+            else return(favoredCat / enjoyed);
+          }
+          if(key === 'annualFeePreference'){
             if (
               (user.preferences.annualFeePreference === 'Any') ||
               (user.preferences.annualFeePreference === 'No Fee' && card.annualFee === 0) ||
               (user.preferences.annualFeePreference === 'Low Fee' && card.annualFee <= 50)
             ) {
-              ptsArr.push(1);
+              return 1;
             } else if
               (user.preferences.annualFeePreference === 'Low Fee' && card.annualFee <= 150) {
-              ptsArr.push(.5);
+              return .5;
             } else {
-              ptsArr.push(0);
+              return 0;
             }
-
+          }
+          if(key === 'creditScoreRange'){
             if (user.preferences.creditScoreRange === card.creditScoreRequired) {
-              ptsArr.push(1);
+              return 1;
             } else if ((user.preferences.creditScoreRange === 'Excellent' && card.creditScoreRequired === 'Good') ||
               (user.preferences.creditScoreRange === 'Good' && (card.creditScoreRequired === 'Fair' || card.creditScoreRequired === 'Excellent')) ||
               (user.preferences.creditScoreRange === 'Fair' && (card.creditScoreRequired === 'Poor' || card.creditScoreRequired === 'Good')) ||
               (user.preferences.creditScoreRange === 'Poor' && (card.creditScoreRequired === 'Fair' || card.creditScoreRequired === 'Building'))) {
-              ptsArr.push(.5);
+              return .5;
             } else {
-              ptsArr.push(0);
+              return 0;
             }
+          }
+
+          if(key === 'signBonus'){
+            if(user.extraPreferences.signBonus === card.signUpBonus){
+              return 1;
+            }else{
+              return 0;
+            }
+          }
+          if(key === 'avgAPR'){
+            if(user.extraPreferences.avgAPR <= card.apr.max && user.extraPreferences.avgAPR >= card.apr.min){
+             return 1;
+            }else{
+              return 0;
+            }
+          }
+          if(key === 'rewardRate'){
+            if(user.extraPreferences.rewardRate === card.rewardsRate){
+              return 1;
+            }else{
+              return 0;
+            }
+          }
+          console.log('err');
+          return NaN;
         }
+      }
+      
         let SCORE = 0;
-        ptsArr.forEach((num) => {
-          SCORE += weight * num;
+        ValsToWeight.forEach((arr) => {
+
+          SCORE += (arr[0] * arr[1]);
         })
         return {
-          ...card.tooObject(),
+          ...card.toObject(),
           SCORE
         };
     });
 
     // Sort by match score
-    recommendedCards.sort((a, b) => b.matchScore - a.matchScore);
+    recommendedCards.sort((a, b) => b.SCORE - a.SCORE);
 
     res.status(200).json({
       success: true,
