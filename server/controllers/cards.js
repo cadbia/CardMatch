@@ -7,7 +7,7 @@ import User from '../models/User.js';
 export const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find();
-    
+
     res.status(200).json({
       success: true,
       count: cards.length,
@@ -24,14 +24,14 @@ export const getCards = async (req, res, next) => {
 export const getCard = async (req, res, next) => {
   try {
     const card = await Card.findById(req.params.id);
-    
+
     if (!card) {
       return res.status(404).json({
         success: false,
         message: 'Card not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: card
@@ -44,91 +44,166 @@ export const getCard = async (req, res, next) => {
 // @desc    Get card recommendations for user
 // @route   GET /api/cards/recommendations
 // @access  Private
+
 export const getRecommendations = async (req, res, next) => {
   try {
-    // Get user preferences
+
+    //Get user
     const user = await User.findById(req.user.id);
-    
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-    
-    // Build query based on user preferences
-    const query = {};
-    
-    // Filter by categories if user has preferences
-    if (user.preferences.categories && user.preferences.categories.length > 0) {
-      query.category = { $in: user.preferences.categories };
+
+
+    // Build query based on preferences
+    const cards = async (user) => {
+      let query = {};
+
+      if (user.preferences.categories && user.preferences.categories.length > 0) {
+        query.category = { $in: user.preferences.categories };
+      }
+
+      // Filter by credit score
+      if (user.preferences.creditScoreRange) {
+        // Map user's credit score to appropriate card requirements
+        const creditScoreMap = {
+          'Excellent': ['Excellent'],
+          'Good': ['Excellent', 'Good'],
+          'Fair': ['Excellent', 'Good', 'Fair'],
+          'Poor': ['Fair', 'Poor'],
+          'Building': ['Poor', 'Building']
+        };
+
+        query.creditScoreRequired = { $in: creditScoreMap[user.preferences.creditScoreRange] };
+      }
+
+      // Filter by annual fee preference
+      if (user.preferences.annualFeePreference === 'No Fee') {
+        query.annualFee = 0;
+      } else if (user.preferences.annualFeePreference === 'Low Fee') {
+        query.annualFee = { $lte: 100 };
+      }
+
+      // Get matching cards
+      const cards = await Card.find(query);
+      return cards;
     }
-    
-    // Filter by credit score
-    if (user.preferences.creditScoreRange) {
-      // Map user's credit score to appropriate card requirements
-      const creditScoreMap = {
-        'Excellent': ['Excellent'],
-        'Good': ['Excellent', 'Good'],
-        'Fair': ['Excellent', 'Good', 'Fair'],
-        'Poor': ['Fair', 'Poor'],
-        'Building': ['Poor', 'Building']
-      };
-      
-      query.creditScoreRequired = { $in: creditScoreMap[user.preferences.creditScoreRange] };
-    }
-    
-    // Filter by annual fee preference
-    if (user.preferences.annualFeePreference === 'No Fee') {
-      query.annualFee = 0;
-    } else if (user.preferences.annualFeePreference === 'Low Fee') {
-      query.annualFee = { $lte: 100 };
-    }
-    
-    // Get matching cards
-    const cards = await Card.find(query);
-    
-    // Calculate match score (simplified version)
+
+    //const cardsData = await cards(user);
+    // Calculate map of card to score based on compatibility, on a scale of 0-100, 100 being the most compatitable
     const recommendedCards = cards.map(card => {
-      let matchScore = 0;
+
+
+    //Find valid categories, and map each key to a weight and value
+      let amntPref = 3;
+      let totalWeight = 0;
+      //map each key to a weight and value for that weight(0-1)
+      const ValsToWeight = new Map();
+      Object.keys(user.preferences).forEach((key)=>{
+        let rankedVal = user.rankedPref.key;
+        totalWeight += rankedVal;
+        ValsToWeight.set(key, [rankedVal])
+      })
+      Object.keys(user.extraPreferences).forEach((key)=>{
+        if(!isNaN(key)){
+          let rankedVal = user.rankedPref.key;
+          totalWeight+= rankedVal;
+          ValsToWeight.set(key, [rankedVal])
+          amntPref++;
+        }
+      })
+
+      //pos 0 holds the amnt of ranked
+      //update each key with its respective weight, in pos[1] of arr key
+      //keys amount of respect on each weight is in pos[0] of arr key
       
-      // Category match
-      if (user.preferences.categories && user.preferences.categories.includes(card.category)) {
-        matchScore += 40;
+      for(const key of ValsToWeight.keys()){
+        let WeightPerPts = 1/totalWeight;
+        WeightPerPts *= ValsToWeight.get(key)[0];
+        ValsToWeight.get(key).push(WeightPerPts);
+        //Now pos 1 holds weight. Not rep;ace pos 0 with the correct value
+        ValsToWeight.get(key)[0] = ()=>{
+          if(key === 'categories'){
+            let favoredCat = user.preferences.categories.length;
+            let enjoyed = 0;
+            user.preferences.categories.forEach((cardCategory) => {
+              if (card.category.includes(cardCategory)) {
+                enjoyed += 1;
+              }
+            })
+            if (enjoyed === 0) return 0;
+            else return(favoredCat / enjoyed);
+          }
+          if(key === 'annualFeePreference'){
+            if (
+              (user.preferences.annualFeePreference === 'Any') ||
+              (user.preferences.annualFeePreference === 'No Fee' && card.annualFee === 0) ||
+              (user.preferences.annualFeePreference === 'Low Fee' && card.annualFee <= 50)
+            ) {
+              return 1;
+            } else if
+              (user.preferences.annualFeePreference === 'Low Fee' && card.annualFee <= 150) {
+              return .5;
+            } else {
+              return 0;
+            }
+          }
+          if(key === 'creditScoreRange'){
+            if (user.preferences.creditScoreRange === card.creditScoreRequired) {
+              return 1;
+            } else if ((user.preferences.creditScoreRange === 'Excellent' && card.creditScoreRequired === 'Good') ||
+              (user.preferences.creditScoreRange === 'Good' && (card.creditScoreRequired === 'Fair' || card.creditScoreRequired === 'Excellent')) ||
+              (user.preferences.creditScoreRange === 'Fair' && (card.creditScoreRequired === 'Poor' || card.creditScoreRequired === 'Good')) ||
+              (user.preferences.creditScoreRange === 'Poor' && (card.creditScoreRequired === 'Fair' || card.creditScoreRequired === 'Building'))) {
+              return .5;
+            } else {
+              return 0;
+            }
+          }
+
+          if(key === 'signBonus'){
+            if(user.extraPreferences.signBonus === card.signUpBonus){
+              return 1;
+            }else{
+              return 0;
+            }
+          }
+          if(key === 'avgAPR'){
+            if(user.extraPreferences.avgAPR <= card.apr.max && user.extraPreferences.avgAPR >= card.apr.min){
+             return 1;
+            }else{
+              return 0;
+            }
+          }
+          if(key === 'rewardRate'){
+            if(user.extraPreferences.rewardRate === card.rewardsRate){
+              return 1;
+            }else{
+              return 0;
+            }
+          }
+          console.log('err');
+          return NaN;
+        }
       }
       
-      // Credit score match
-      if (user.preferences.creditScoreRange === card.creditScoreRequired) {
-        matchScore += 30;
-      } else if (
-        (user.preferences.creditScoreRange === 'Excellent' && card.creditScoreRequired === 'Good') ||
-        (user.preferences.creditScoreRange === 'Good' && card.creditScoreRequired === 'Fair') ||
-        (user.preferences.creditScoreRange === 'Fair' && card.creditScoreRequired === 'Poor')
-      ) {
-        matchScore += 20;
-      }
-      
-      // Annual fee match
-      if (
-        (user.preferences.annualFeePreference === 'No Fee' && card.annualFee === 0) ||
-        (user.preferences.annualFeePreference === 'Low Fee' && card.annualFee <= 100) ||
-        (user.preferences.annualFeePreference === 'Any')
-      ) {
-        matchScore += 30;
-      }
-      
-      // Ensure score is between 0-100
-      matchScore = Math.min(100, Math.max(0, matchScore));
-      
-      return {
-        ...card.toObject(),
-        matchScore
-      };
+        let SCORE = 0;
+        ValsToWeight.forEach((arr) => {
+
+          SCORE += (arr[0] * arr[1]);
+        })
+        return {
+          ...card.toObject(),
+          SCORE
+        };
     });
-    
+
     // Sort by match score
-    recommendedCards.sort((a, b) => b.matchScore - a.matchScore);
-    
+    recommendedCards.sort((a, b) => b.SCORE - a.SCORE);
+
     res.status(200).json({
       success: true,
       count: recommendedCards.length,

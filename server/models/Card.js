@@ -36,10 +36,11 @@ const CardSchema = new mongoose.Schema({
     }
   },
   rewardsRate: {
-    type: String
+    type: String,
+    enum: ['Rotating', 'FlatRate']
   },
-  signupBonus: {
-    type: String
+  signUpBonus: {
+    type: Boolean
   },
   creditScoreRequired: {
     type: String,
