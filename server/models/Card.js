@@ -15,7 +15,7 @@ const CardSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Please provide a card category'],
-    enum: ['Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest']
+    enum: ['Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest', 'Building Credit']
   },
   description: {
     type: String,

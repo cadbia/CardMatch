@@ -115,7 +115,7 @@ const cards = [
   {
     name: 'Secured Credit Builder',
     provider: 'Bank of America',
-    category: 'Building',
+    category: 'Building Credit',
     description: 'Build or rebuild your credit with responsible use.',
     annualFee: 0,
     apr: {
