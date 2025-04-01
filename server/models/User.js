@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -27,7 +26,7 @@ const UserSchema = new mongoose.Schema({
   preferences: {
     categories: [{
       type: String,
-      enum: ['Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest']
+      enum: ['Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest', 'Building Credit']
     }],
     annualFeePreference: {
       type: String,
@@ -40,54 +39,46 @@ const UserSchema = new mongoose.Schema({
       default: 'Good'
     }
   },
-  extraPreferences:{
-    signBonus:{
+  extraPreferences: {
+    signBonus: {
       type: Boolean,
-      default: Nan
+      default: false
     },
-    avgAPR:{
+    avgAPR: {
       type: Number,
-      default: Nan
+      default: null
     },
-    rewardRate:{
+    rewardRate: {
       type: String,
-      enum: ['Rotating', 'FlatRate'],
-      default: Nan
-    }    
+      default: null
+    }
   },
-  //Holds the amount of importance for each preference. 4 being the most important, 0 the least. Defaults at 2 if not ranked.
-  rankedPref: [{
-    categories : {
+  rankedPref: {
+    categories: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
-      default: 2
+      default: 3
     },
     annualFeePreference: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
       default: 2
     },
     creditScoreRange: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
-      default: 2
+      default: 1
     },
-    signBonus : {
+    signBonus: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
-      default: 2
+      default: 0
     },
-    avgAPR : {
+    avgAPR: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
-      default: 2
+      default: 0
     },
-    rewardRate : {
+    rewardRate: {
       type: Number,
-      enum: [0, 1, 2, 3, 4],
-      default: 2
+      default: 0
     }
-}],
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -105,15 +96,6 @@ UserSchema.pre('save', async function(next) {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
-
-// Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function() {
-  return jwt.sign(
-    { id: this._id },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
-};
 
 // Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function(enteredPassword) {

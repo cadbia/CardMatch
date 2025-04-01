@@ -55,8 +55,9 @@ api.interceptors.response.use(
 );
 
 // Auth API functions
-export const register = async (name: string, email: string, password: string): Promise<LoginResponse> => {
-  return api.post('/auth/register', { name, email, password });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const register = async (userData: any): Promise<LoginResponse> => {
+  return api.post('/auth/register', userData);
 };
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
@@ -85,7 +86,8 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<ApiRes
   return api.put('/users/profile', userData);
 };
 
-export const updateUserPreferences = async (preferences: Partial<User>): Promise<ApiResponse<User>> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const updateUserPreferences = async (preferences: any): Promise<ApiResponse<any>> => {
   return api.put('/users/preferences', preferences);
 };
 
