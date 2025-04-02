@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,7 +67,7 @@ const LoginPage = () => {
       ...item,
       rank: existingRanks.get(item.id) || 0
     })));
-  }, [signBonus, avgAPR, rewardRate]);
+  }, [signBonus, avgAPR, rewardRate, allPreferenceItems]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

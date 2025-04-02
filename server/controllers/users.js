@@ -81,3 +81,27 @@ export const updatePreferences = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Delete user account
+// @route   DELETE /api/users/account
+// @access  Private
+export const deleteAccount = async (req, res, next) => {
+  try {
+    // Delete user
+    const user = await User.findByIdAndDelete(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+};
