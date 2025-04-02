@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import { Card, ApiResponse, LoginResponse, User } from '../types';
 
@@ -91,6 +90,43 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<ApiRes
 
 export const updateUserPreferences = async (preferences: any): Promise<ApiResponse<any>> => {
   return api.put('/users/preferences', preferences);
+};
+
+// Transaction API functions
+export const uploadTransactions = async (formData: FormData): Promise<ApiResponse<any>> => {
+  return api.post('/transactions/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const getTransactions = async (params?: {
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+}): Promise<ApiResponse<any>> => {
+  return api.get('/transactions', { params });
+};
+
+export const updateTransactionCategory = async (
+  id: string,
+  category: string
+): Promise<ApiResponse<any>> => {
+  return api.put(`/transactions/${id}/category`, { category });
+};
+
+export const deleteTransaction = async (id: string): Promise<ApiResponse<void>> => {
+  return api.delete(`/transactions/${id}`);
+};
+
+export const getTransactionAnalytics = async (params?: {
+  startDate?: string;
+  endDate?: string;
+}): Promise<ApiResponse<any>> => {
+  return api.get('/transactions/analytics', { params });
 };
 
 // Mock function to simulate fetching dashboard data
