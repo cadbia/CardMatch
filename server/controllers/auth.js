@@ -6,7 +6,14 @@ import jwt from 'jsonwebtoken';
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      preferences, 
+      extraPreferences,
+      rankedPref 
+    } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -17,11 +24,14 @@ export const register = async (req, res, next) => {
       });
     }
 
-    // Create user
+    // Create user with preferences
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      preferences,
+      extraPreferences,
+      rankedPref
     });
 
     // Generate token
@@ -37,7 +47,10 @@ export const register = async (req, res, next) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        preferences: user.preferences,
+        extraPreferences: user.extraPreferences,
+        rankedPref: user.rankedPref
       }
     });
   } catch (error) {
@@ -91,7 +104,10 @@ export const login = async (req, res, next) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        preferences: user.preferences,
+        extraPreferences: user.extraPreferences,
+        rankedPref: user.rankedPref
       }
     });
   } catch (error) {
@@ -108,7 +124,14 @@ export const getMe = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: user
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        preferences: user.preferences,
+        extraPreferences: user.extraPreferences,
+        rankedPref: user.rankedPref
+      }
     });
   } catch (error) {
     next(error);

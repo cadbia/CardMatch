@@ -3,65 +3,61 @@ import mongoose from 'mongoose';
 const CardSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please provide a card name'],
+    required: [true, 'Please provide card name'],
     trim: true,
-    maxlength: [100, 'Card name cannot be more than 100 characters']
+    maxlength: [100, 'Name cannot be more than 100 characters']
   },
   provider: {
     type: String,
-    required: [true, 'Please provide a card provider'],
+    required: [true, 'Please provide card provider'],
     trim: true
   },
   category: {
     type: String,
-    required: [true, 'Please provide a card category'],
+    required: [true, 'Please provide card category'],
     enum: ['Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest', 'Building Credit']
   },
   description: {
     type: String,
-    required: [true, 'Please provide a card description']
+    required: [true, 'Please provide card description']
   },
   annualFee: {
     type: Number,
-    default: 0
+    required: [true, 'Please provide annual fee'],
+    min: 0
   },
   apr: {
     min: {
       type: Number,
-      required: true
+      required: [true, 'Please provide minimum APR']
     },
     max: {
       type: Number,
-      required: true
+      required: [true, 'Please provide maximum APR']
     }
   },
   rewardsRate: {
     type: String,
-    enum: ['Rotating', 'FlatRate']
+    required: [true, 'Please provide rewards rate']
   },
-  signUpBonus: {
-    type: Boolean
+  signupBonus: {
+    type: String,
+    default: 'None'
   },
   creditScoreRequired: {
     type: String,
-    enum: ['Excellent', 'Good', 'Fair', 'Poor', 'Building'],
-    required: true
+    required: [true, 'Please provide required credit score'],
+    enum: ['Excellent', 'Good', 'Fair', 'Poor', 'Building']
   },
   features: [{
     type: String
   }],
   imageUrl: {
-    type: String
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+    type: String,
+    required: [true, 'Please provide card image URL']
   }
 }, {
   timestamps: true
 });
-
-// Create index for better search performance
-CardSchema.index({ name: 'text', provider: 'text', category: 'text' });
 
 export default mongoose.model('Card', CardSchema);

@@ -5,133 +5,428 @@ import Card from '../models/Card.js';
 // Load environment variables
 dotenv.config();
 
-// Sample card data
+// Sample card data with realistic values
 const cards = [
   {
-    name: 'Premium Rewards Card',
-    provider: 'Capital One',
+    name: 'Chase Sapphire Reserve',
+    provider: 'Chase',
     category: 'Travel',
-    description: 'Earn premium rewards on travel purchases and enjoy exclusive travel benefits.',
-    annualFee: 95,
+    description: 'Premium travel rewards card with luxury benefits and high rewards on travel and dining purchases.',
+    annualFee: 550,
     apr: {
-      min: 16.99,
-      max: 24.99
+      min: 18.49,
+      max: 25.49
     },
-    rewardsRate: '2x points on travel, 1.5x points on everything else',
-    signupBonus: '60,000 bonus points after spending $4,000 in first 3 months',
+    rewardsRate: '3x points on travel and dining',
+    signupBonus: '60,000 points after spending $4,000 in first 3 months',
     creditScoreRequired: 'Excellent',
     features: [
-      'No foreign transaction fees',
-      'Travel insurance',
-      'Airport lounge access',
-      'Global Entry/TSA PreCheck credit'
+      'Priority Pass lounge access',
+      '$300 annual travel credit',
+      'Global Entry/TSA PreCheck credit',
+      'Primary rental car insurance',
+      'Trip cancellation/interruption insurance'
     ],
-    imageUrl: 'https://example.com/premium-rewards-card.jpg'
+    imageUrl: 'https://example.com/sapphire-reserve.jpg'
   },
   {
-    name: 'Cash Back Preferred',
-    provider: 'Chase',
+    name: 'American Express Blue Cash Preferred',
+    provider: 'American Express',
     category: 'Cash Back',
-    description: 'Earn cash back on everyday purchases with enhanced rewards in select categories.',
+    description: 'High cash back rates on everyday purchases including groceries and streaming services.',
+    annualFee: 95,
+    apr: {
+      min: 15.49,
+      max: 25.49
+    },
+    rewardsRate: '6% at supermarkets, 6% on streaming, 3% on transit and gas',
+    signupBonus: '$350 back after spending $3,000 in first 6 months',
+    creditScoreRequired: 'Good',
+    features: [
+      'Return protection',
+      'Extended warranty',
+      'Car rental insurance',
+      'Purchase protection'
+    ],
+    imageUrl: 'https://example.com/blue-cash-preferred.jpg'
+  },
+  {
+    name: 'Capital One Venture X',
+    provider: 'Capital One',
+    category: 'Travel',
+    description: 'Premium travel card with flexible rewards and comprehensive travel benefits.',
+    annualFee: 395,
+    apr: {
+      min: 17.49,
+      max: 24.49
+    },
+    rewardsRate: '10x on hotels, 5x on flights, 2x on everything else',
+    signupBonus: '75,000 miles after spending $4,000 in first 3 months',
+    creditScoreRequired: 'Excellent',
+    features: [
+      'Priority Pass and Capital One Lounge access',
+      '$300 annual travel credit',
+      '10,000 bonus miles anniversary bonus',
+      'Cell phone protection'
+    ],
+    imageUrl: 'https://example.com/venture-x.jpg'
+  },
+  {
+    name: 'Discover it Cash Back',
+    provider: 'Discover',
+    category: 'Cash Back',
+    description: 'No annual fee card with rotating 5% cash back categories and first-year cash back match.',
     annualFee: 0,
     apr: {
-      min: 14.99,
-      max: 23.99
+      min: 13.49,
+      max: 24.49
     },
-    rewardsRate: '3% on dining, 2% on groceries, 1% on everything else',
-    signupBonus: '$200 cash back after spending $1,000 in first 3 months',
+    rewardsRate: '5% on rotating categories, 1% on all purchases',
+    signupBonus: 'Cash back match for the first year',
     creditScoreRequired: 'Good',
     features: [
       'No annual fee',
-      'Cash back rewards never expire',
-      'Zero liability protection',
-      'Purchase protection'
+      'No foreign transaction fees',
+      'Free FICO score',
+      'Cash back match first year'
     ],
-    imageUrl: 'https://example.com/cash-back-preferred.jpg'
+    imageUrl: 'https://example.com/discover-it.jpg'
   },
   {
-    name: 'Student Rewards',
-    provider: 'Discover',
-    category: 'Student',
-    description: 'Build credit history while earning rewards with no annual fee.',
+    name: 'Chase Freedom Unlimited',
+    provider: 'Chase',
+    category: 'Cash Back',
+    description: 'Flexible cash back card with bonus categories and no annual fee.',
     annualFee: 0,
     apr: {
-      min: 13.99,
-      max: 22.99
+      min: 16.49,
+      max: 25.24
     },
-    rewardsRate: '5% cash back in rotating categories, 1% on everything else',
-    signupBonus: 'Cash back match at the end of first year',
+    rewardsRate: '1.5% on all purchases',
+    signupBonus: '$200 after spending $500 in first 3 months',
+    creditScoreRequired: 'Good',
+    features: [
+      'No annual fee',
+      'Purchase protection',
+      'Extended warranty',
+      'Zero liability protection'
+    ],
+    imageUrl: 'https://example.com/freedom-unlimited.jpg'
+  },
+  {
+    name: 'Citi Double Cash',
+    provider: 'Citi',
+    category: 'Cash Back',
+    description: 'Simple but effective cash back card with up to 2% back on all purchases.',
+    annualFee: 0,
+    apr: {
+      min: 15.49,
+      max: 25.49
+    },
+    rewardsRate: '2% on all purchases (1% when you buy + 1% when you pay)',
+    signupBonus: 'None',
+    creditScoreRequired: 'Good',
+    features: [
+      'No annual fee',
+      'Citi Entertainment access',
+      'Lost wallet service',
+      'Virtual account numbers'
+    ],
+    imageUrl: 'https://example.com/double-cash.jpg'
+  },
+  {
+    name: 'American Express Gold Card',
+    provider: 'American Express',
+    category: 'Rewards',
+    description: 'Premium rewards card focused on dining and groceries with valuable credits.',
+    annualFee: 250,
+    apr: {
+      min: 17.49,
+      max: 25.49
+    },
+    rewardsRate: '4x points at restaurants and supermarkets, 3x on flights',
+    signupBonus: '60,000 points after spending $4,000 in first 6 months',
+    creditScoreRequired: 'Excellent',
+    features: [
+      '$120 dining credit',
+      '$120 Uber cash',
+      'No foreign transaction fees',
+      'Trip delay insurance'
+    ],
+    imageUrl: 'https://example.com/amex-gold.jpg'
+  },
+  {
+    name: 'Capital One Quicksilver Student',
+    provider: 'Capital One',
+    category: 'Student',
+    description: 'Student card with flat-rate cash back and no annual fee.',
+    annualFee: 0,
+    apr: {
+      min: 16.49,
+      max: 26.49
+    },
+    rewardsRate: '1.5% on all purchases',
+    signupBonus: '$50 after spending $100 in first 3 months',
     creditScoreRequired: 'Fair',
     features: [
       'No annual fee',
-      'No late fee on first late payment',
-      'Free FICO score access',
-      'Good Grade Reward'
+      'No foreign transaction fees',
+      'Free credit monitoring',
+      'Extended warranty'
     ],
-    imageUrl: 'https://example.com/student-rewards.jpg'
+    imageUrl: 'https://example.com/quicksilver-student.jpg'
   },
   {
-    name: 'Business Platinum',
-    provider: 'American Express',
-    category: 'Business',
-    description: 'Premium business card with travel benefits and expense management tools.',
-    annualFee: 595,
+    name: 'Discover it Student Chrome',
+    provider: 'Discover',
+    category: 'Student',
+    description: 'Student card with bonus cash back on gas and restaurants.',
+    annualFee: 0,
     apr: {
-      min: 15.99,
-      max: 23.99
+      min: 14.49,
+      max: 23.49
     },
-    rewardsRate: '5x points on flights and hotels, 1.5x points on purchases over $5,000',
+    rewardsRate: '2% at gas stations and restaurants, 1% on all purchases',
+    signupBonus: 'Cash back match for the first year',
+    creditScoreRequired: 'Fair',
+    features: [
+      'Good Grade Reward',
+      'No late fee on first late payment',
+      'Free FICO score',
+      'No foreign transaction fees'
+    ],
+    imageUrl: 'https://example.com/student-chrome.jpg'
+  },
+  {
+    name: 'Chase Ink Business Preferred',
+    provider: 'Chase',
+    category: 'Business',
+    description: 'Premium business card with high rewards on common business expenses.',
+    annualFee: 95,
+    apr: {
+      min: 17.49,
+      max: 22.49
+    },
+    rewardsRate: '3x points on travel, shipping, internet, cable, phone, and advertising',
     signupBonus: '100,000 points after spending $15,000 in first 3 months',
     creditScoreRequired: 'Excellent',
     features: [
-      'Airport lounge access',
-      'Annual airline fee credit',
-      'Global Entry/TSA PreCheck credit',
-      'Expense management tools'
+      'Cell phone protection',
+      'Trip cancellation insurance',
+      'Purchase protection',
+      'Extended warranty'
     ],
-    imageUrl: 'https://example.com/business-platinum.jpg'
+    imageUrl: 'https://example.com/ink-preferred.jpg'
   },
   {
-    name: 'Low Interest Rate Card',
-    provider: 'Citi',
+    name: 'Capital One Spark Cash Plus',
+    provider: 'Capital One',
+    category: 'Business',
+    description: 'Business card with unlimited 2% cash back and no preset spending limit.',
+    annualFee: 150,
+    apr: {
+      min: 0,
+      max: 0
+    },
+    rewardsRate: '2% on all purchases',
+    signupBonus: 'Up to $1,000 cash bonus',
+    creditScoreRequired: 'Excellent',
+    features: [
+      'No preset spending limit',
+      'Annual $200 cash bonus',
+      'Free employee cards',
+      'Downloadable purchase records'
+    ],
+    imageUrl: 'https://example.com/spark-cash-plus.jpg'
+  },
+  {
+    name: 'U.S. Bank Visa Platinum',
+    provider: 'U.S. Bank',
     category: 'Low Interest',
-    description: 'Save on interest with one of the lowest APRs available.',
+    description: 'Low interest card with long 0% APR period and cell phone protection.',
     annualFee: 0,
     apr: {
-      min: 9.99,
-      max: 17.99
+      min: 15.24,
+      max: 25.24
     },
     rewardsRate: 'No rewards program',
-    signupBonus: '0% intro APR for 18 months',
+    signupBonus: 'None',
     creditScoreRequired: 'Good',
     features: [
-      'No annual fee',
-      'Low ongoing APR',
-      'Balance transfer option',
-      'No penalty APR'
+      'Long 0% APR period',
+      'Cell phone protection',
+      'Free credit score',
+      'Account alerts'
     ],
-    imageUrl: 'https://example.com/low-interest-card.jpg'
+    imageUrl: 'https://example.com/visa-platinum.jpg'
   },
   {
-    name: 'Secured Credit Builder',
-    provider: 'Bank of America',
-    category: 'Building Credit',
-    description: 'Build or rebuild your credit with responsible use.',
+    name: 'Wells Fargo Reflect',
+    provider: 'Wells Fargo',
+    category: 'Low Interest',
+    description: 'Low interest card with one of the longest 0% APR periods available.',
     annualFee: 0,
     apr: {
-      min: 20.99,
-      max: 25.99
+      min: 14.49,
+      max: 26.49
     },
-    rewardsRate: '1% cash back on all purchases',
+    rewardsRate: 'No rewards program',
+    signupBonus: 'None',
+    creditScoreRequired: 'Good',
+    features: [
+      'Up to 21-month 0% APR period',
+      'Cell phone protection',
+      'Roadside dispatch',
+      'Emergency assistance'
+    ],
+    imageUrl: 'https://example.com/reflect.jpg'
+  },
+  {
+    name: 'Discover it Secured',
+    provider: 'Discover',
+    category: 'Building Credit',
+    description: 'Secured card with cash back rewards and no annual fee.',
+    annualFee: 0,
+    apr: {
+      min: 23.24,
+      max: 23.24
+    },
+    rewardsRate: '2% at gas stations and restaurants, 1% on all purchases',
+    signupBonus: 'Cash back match for the first year',
+    creditScoreRequired: 'Poor',
+    features: [
+      'No annual fee',
+      'Free FICO score',
+      'Automatic monthly reviews after 7 months',
+      'Cash back rewards'
+    ],
+    imageUrl: 'https://example.com/secured.jpg'
+  },
+  {
+    name: 'Capital One Platinum Secured',
+    provider: 'Capital One',
+    category: 'Building Credit',
+    description: 'Secured card with potential for credit line increase and flexible deposit.',
+    annualFee: 0,
+    apr: {
+      min: 26.99,
+      max: 26.99
+    },
+    rewardsRate: 'No rewards program',
     signupBonus: 'None',
     creditScoreRequired: 'Poor',
     features: [
       'No annual fee',
-      'Security deposit required',
-      'Credit line equal to deposit',
-      'Path to unsecured credit'
+      'Automatic credit line review',
+      'Pick your payment due date',
+      'Security deposit as low as $49'
     ],
-    imageUrl: 'https://example.com/secured-credit-builder.jpg'
+    imageUrl: 'https://example.com/platinum-secured.jpg'
+  },
+  {
+    name: 'Chase Freedom Flex',
+    provider: 'Chase',
+    category: 'Cash Back',
+    description: 'Dynamic cash back card with rotating categories and fixed bonus categories.',
+    annualFee: 0,
+    apr: {
+      min: 16.49,
+      max: 25.24
+    },
+    rewardsRate: '5% on rotating categories, 3% on dining and drugstores',
+    signupBonus: '$200 after spending $500 in first 3 months',
+    creditScoreRequired: 'Good',
+    features: [
+      'Cell phone protection',
+      'Purchase protection',
+      'Extended warranty',
+      'Trip cancellation insurance'
+    ],
+    imageUrl: 'https://example.com/freedom-flex.jpg'
+  },
+  {
+    name: 'American Express Platinum',
+    provider: 'American Express',
+    category: 'Travel',
+    description: 'Ultra-premium travel card with extensive benefits and credits.',
+    annualFee: 695,
+    apr: {
+      min: 18.49,
+      max: 25.49
+    },
+    rewardsRate: '5x on flights and hotels booked through Amex Travel',
+    signupBonus: '80,000 points after spending $6,000 in first 6 months',
+    creditScoreRequired: 'Excellent',
+    features: [
+      'Airport lounge access',
+      '$200 airline fee credit',
+      '$200 hotel credit',
+      '$200 Uber cash'
+    ],
+    imageUrl: 'https://example.com/amex-platinum.jpg'
+  },
+  {
+    name: 'Capital One SavorOne',
+    provider: 'Capital One',
+    category: 'Cash Back',
+    description: 'No annual fee card with high rewards on dining and entertainment.',
+    annualFee: 0,
+    apr: {
+      min: 16.49,
+      max: 26.49
+    },
+    rewardsRate: '3% on dining, entertainment, and groceries',
+    signupBonus: '$200 after spending $500 in first 3 months',
+    creditScoreRequired: 'Good',
+    features: [
+      'No foreign transaction fees',
+      'Extended warranty',
+      'Travel accident insurance',
+      'Virtual card numbers'
+    ],
+    imageUrl: 'https://example.com/savor-one.jpg'
+  },
+  {
+    name: 'Navy Federal Credit Union Platinum',
+    provider: 'Navy Federal',
+    category: 'Low Interest',
+    description: 'Low interest card with no balance transfer fees.',
+    annualFee: 0,
+    apr: {
+      min: 8.99,
+      max: 18.00
+    },
+    rewardsRate: 'No rewards program',
+    signupBonus: 'None',
+    creditScoreRequired: 'Fair',
+    features: [
+      'No balance transfer fees',
+      'No cash advance fees',
+      'No foreign transaction fees',
+      'Cell phone protection'
+    ],
+    imageUrl: 'https://example.com/nfcu-platinum.jpg'
+  },
+  {
+    name: 'OpenSky Secured Visa',
+    provider: 'OpenSky',
+    category: 'Building Credit',
+    description: 'Secured card with no credit check required.',
+    annualFee: 35,
+    apr: {
+      min: 17.39,
+      max: 17.39
+    },
+    rewardsRate: 'No rewards program',
+    signupBonus: 'None',
+    creditScoreRequired: 'Poor',
+    features: [
+      'No credit check required',
+      'Reports to all 3 credit bureaus',
+      'Choose your credit limit',
+      'Mobile account access'
+    ],
+    imageUrl: 'https://example.com/opensky-secured.jpg'
   }
 ];
 

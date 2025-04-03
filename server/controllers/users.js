@@ -5,13 +5,12 @@ import User from '../models/User.js';
 // @access  Private
 export const updateProfile = async (req, res, next) => {
   try {
-    const { name, email, preferences } = req.body;
+    const { name, email } = req.body;
     
     // Build update object
     const updateFields = {};
     if (name) updateFields.name = name;
     if (email) updateFields.email = email;
-    if (preferences) updateFields.preferences = preferences;
     
     // Update user
     const user = await User.findByIdAndUpdate(
@@ -29,7 +28,14 @@ export const updateProfile = async (req, res, next) => {
     
     res.status(200).json({
       success: true,
-      data: user
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        preferences: user.preferences,
+        extraPreferences: user.extraPreferences,
+        rankedPref: user.rankedPref
+      }
     });
   } catch (error) {
     next(error);
@@ -41,18 +47,18 @@ export const updateProfile = async (req, res, next) => {
 // @access  Private
 export const updatePreferences = async (req, res, next) => {
   try {
-    const { categories, annualFeePreference, creditScoreRange } = req.body;
+    const { preferences, extraPreferences, rankedPref } = req.body;
     
-    // Build preferences object
-    const preferences = {};
-    if (categories) preferences.categories = categories;
-    if (annualFeePreference) preferences.annualFeePreference = annualFeePreference;
-    if (creditScoreRange) preferences.creditScoreRange = creditScoreRange;
+    // Build update object
+    const updateFields = {};
+    if (preferences) updateFields.preferences = preferences;
+    if (extraPreferences) updateFields.extraPreferences = extraPreferences;
+    if (rankedPref) updateFields.rankedPref = rankedPref;
     
     // Update user preferences
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { preferences },
+      updateFields,
       { new: true, runValidators: true }
     );
     
@@ -65,7 +71,35 @@ export const updatePreferences = async (req, res, next) => {
     
     res.status(200).json({
       success: true,
-      data: user.preferences
+      data: {
+        preferences: user.preferences,
+        extraPreferences: user.extraPreferences,
+        rankedPref: user.rankedPref
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete user account
+// @route   DELETE /api/users/account
+// @access  Private
+export const deleteAccount = async (req, res, next) => {
+  try {
+    // Delete user
+    const user = await User.findByIdAndDelete(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: {}
     });
   } catch (error) {
     next(error);

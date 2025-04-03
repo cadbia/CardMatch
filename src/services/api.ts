@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import { Card, ApiResponse, LoginResponse, User } from '../types';
 
@@ -13,7 +14,6 @@ const api = axios.create({
 // Add a request interceptor for auth tokens, etc.
 api.interceptors.request.use(
   (config) => {
-    // You could add auth tokens here
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -55,8 +55,8 @@ api.interceptors.response.use(
 );
 
 // Auth API functions
-export const register = async (name: string, email: string, password: string): Promise<LoginResponse> => {
-  return api.post('/auth/register', { name, email, password });
+export const register = async (userData: any): Promise<LoginResponse> => {
+  return api.post('/auth/register', userData);
 };
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
@@ -65,6 +65,10 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 
 export const getCurrentUser = async (): Promise<ApiResponse<User>> => {
   return api.get('/auth/me');
+};
+
+export const deleteAccount = async (): Promise<ApiResponse<void>> => {
+  return api.delete('/users/account');
 };
 
 // Card API functions
@@ -85,52 +89,12 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<ApiRes
   return api.put('/users/profile', userData);
 };
 
-export const updateUserPreferences = async (preferences: Partial<User>): Promise<ApiResponse<User>> => {
+export const updateUserPreferences = async (preferences: any): Promise<ApiResponse<any>> => {
   return api.put('/users/preferences', preferences);
 };
 
 // Mock function to simulate fetching dashboard data
 export const fetchDashboardData = async () => {
-  // In development, use the mock data
-  if (import.meta.env.DEV && !localStorage.getItem('token')) {
-    // For now, return mock data after a short delay
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: '1',
-            name: 'Premium Rewards Card',
-            provider: 'Capital One',
-            category: 'Travel',
-            matchScore: 95,
-          },
-          {
-            id: '2',
-            name: 'Cash Back Preferred',
-            provider: 'Chase',
-            category: 'Cash Back',
-            matchScore: 88,
-          },
-          {
-            id: '3',
-            name: 'Student Rewards',
-            provider: 'Discover',
-            category: 'Student',
-            matchScore: 82,
-          },
-          {
-            id: '4',
-            name: 'Business Platinum',
-            provider: 'American Express',
-            category: 'Business',
-            matchScore: 75,
-          },
-        ]);
-      }, 1000);
-    });
-  }
-  
-  // If authenticated, use the real API
   try {
     const response = await fetchCardRecommendations();
     return response.data;

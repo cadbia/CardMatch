@@ -7,7 +7,7 @@ import User from '../models/User.js';
 export const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find();
-
+    
     res.status(200).json({
       success: true,
       count: cards.length,
@@ -24,14 +24,14 @@ export const getCards = async (req, res, next) => {
 export const getCard = async (req, res, next) => {
   try {
     const card = await Card.findById(req.params.id);
-
+    
     if (!card) {
       return res.status(404).json({
         success: false,
         message: 'Card not found'
       });
     }
-
+    
     res.status(200).json({
       success: true,
       data: card
@@ -44,11 +44,9 @@ export const getCard = async (req, res, next) => {
 // @desc    Get card recommendations for user
 // @route   GET /api/cards/recommendations
 // @access  Private
-
 export const getRecommendations = async (req, res, next) => {
   try {
-
-    //Get user
+    // Get user
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -56,7 +54,6 @@ export const getRecommendations = async (req, res, next) => {
         message: 'User not found'
       });
     }
-
 
     // Build query based on preferences
     const cards = async (user) => {
@@ -92,24 +89,22 @@ export const getRecommendations = async (req, res, next) => {
       return cards;
     }
 
-    //const cardsData = await cards(user);
-    // Calculate map of card to score based on compatibility, on a scale of 0-100, 100 being the most compatitable
-    const recommendedCards = cards.map(card => {
-
-
-    //Find valid categories, and map each key to a weight and value
+    const cardsData = await cards(user);
+    // Calculate match score based on preferences and their rankings
+    const recommendedCards = cardsData.map(card => {
+      //Find valid categories, and map each key to a weight and value
       let amntPref = 3;
       let totalWeight = 0;
       //map each key to a weight and value for that weight(0-1)
       const ValsToWeight = new Map();
       Object.keys(user.preferences).forEach((key)=>{
-        let rankedVal = user.rankedPref.key;
+        let rankedVal = user.rankedPref[key];
         totalWeight += rankedVal;
         ValsToWeight.set(key, [rankedVal])
       })
       Object.keys(user.extraPreferences).forEach((key)=>{
-        if(!isNaN(key)){
-          let rankedVal = user.rankedPref.key;
+        if(key){
+          let rankedVal = user.rankedPref[key];
           totalWeight+= rankedVal;
           ValsToWeight.set(key, [rankedVal])
           amntPref++;
@@ -124,7 +119,7 @@ export const getRecommendations = async (req, res, next) => {
         let WeightPerPts = 1/totalWeight;
         WeightPerPts *= ValsToWeight.get(key)[0];
         ValsToWeight.get(key).push(WeightPerPts);
-        //Now pos 1 holds weight. Not rep;ace pos 0 with the correct value
+        //Now pos 1 holds weight. Not replace pos 0 with the correct value
         ValsToWeight.get(key)[0] = ()=>{
           if(key === 'categories'){
             let favoredCat = user.preferences.categories.length;
@@ -165,7 +160,7 @@ export const getRecommendations = async (req, res, next) => {
           }
 
           if(key === 'signBonus'){
-            if(user.extraPreferences.signBonus === card.signUpBonus){
+            if(user.extraPreferences.signBonus === true && card.signupBonus !== 'None'){
               return 1;
             }else{
               return 0;
@@ -190,19 +185,22 @@ export const getRecommendations = async (req, res, next) => {
         }
       }
       
-        let SCORE = 0;
-        ValsToWeight.forEach((arr) => {
+      let matchScore = 0;
+      ValsToWeight.forEach((arr) => {
+        matchScore += (arr[0]() * arr[1]);
+      })
 
-          SCORE += (arr[0] * arr[1]);
-        })
-        return {
-          ...card.toObject(),
-          SCORE
-        };
+      // Convert to percentage and round to nearest integer
+      matchScore = Math.round(matchScore * 100);
+
+      return {
+        ...card.toObject(),
+        matchScore
+      };
     });
 
     // Sort by match score
-    recommendedCards.sort((a, b) => b.SCORE - a.SCORE);
+    recommendedCards.sort((a, b) => b.matchScore - a.matchScore);
 
     res.status(200).json({
       success: true,
