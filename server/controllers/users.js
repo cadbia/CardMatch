@@ -47,6 +47,7 @@ export const updateProfile = async (req, res, next) => {
 // @access  Private
 export const updatePreferences = async (req, res, next) => {
   try {
+    console.log(req.body);
     const { preferences, extraPreferences, rankedPref } = req.body;
     
     // Build update object

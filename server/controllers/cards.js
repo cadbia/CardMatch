@@ -103,7 +103,7 @@ export const getRecommendations = async (req, res, next) => {
         ValsToWeight.set(key, [rankedVal])
       })
       Object.keys(user.extraPreferences).forEach((key)=>{
-        if(key){
+        if(key!=null){
           let rankedVal = user.rankedPref[key];
           totalWeight+= rankedVal;
           ValsToWeight.set(key, [rankedVal])
@@ -118,11 +118,13 @@ export const getRecommendations = async (req, res, next) => {
       for(const key of ValsToWeight.keys()){
         let WeightPerPts = 1/totalWeight;
         WeightPerPts *= ValsToWeight.get(key)[0];
+        //console.log(WeightPerPts, totalWeight);
         ValsToWeight.get(key).push(WeightPerPts);
         //Now pos 1 holds weight. Not replace pos 0 with the correct value
         ValsToWeight.get(key)[0] = ()=>{
           if(key === 'categories'){
             let favoredCat = user.preferences.categories.length;
+            //console.log("yo here we are: ", favoredCat);
             let enjoyed = 0;
             user.preferences.categories.forEach((cardCategory) => {
               if (card.category.includes(cardCategory)) {
@@ -130,7 +132,7 @@ export const getRecommendations = async (req, res, next) => {
               }
             })
             if (enjoyed === 0) return 0;
-            else return(favoredCat / enjoyed);
+            else return(enjoyed / favoredCat);
           }
           if(key === 'annualFeePreference'){
             if (
@@ -187,6 +189,7 @@ export const getRecommendations = async (req, res, next) => {
       
       let matchScore = 0;
       ValsToWeight.forEach((arr) => {
+        //console.log(arr[0](), arr[1]);
         matchScore += (arr[0]() * arr[1]);
       })
 
@@ -201,7 +204,9 @@ export const getRecommendations = async (req, res, next) => {
 
     // Sort by match score
     recommendedCards.sort((a, b) => b.matchScore - a.matchScore);
-
+    // for(let blah in recommendedCards){
+    //   console.log(recommendedCards[blah]);
+    // }
     res.status(200).json({
       success: true,
       count: recommendedCards.length,

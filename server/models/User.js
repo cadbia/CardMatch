@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
   extraPreferences: {
     signBonus: {
       type: Boolean,
-      default: false
+      default: null
     },
     avgAPR: {
       type: Number,
