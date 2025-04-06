@@ -5,11 +5,13 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fileUpload from 'express-fileupload';
 
 // Routes
 import authRoutes from './routes/auth.js';
 import cardRoutes from './routes/cards.js';
 import userRoutes from './routes/users.js';
+import transactionRoutes from './routes/transactions.js';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +27,12 @@ const __dirname = path.dirname(__filename);
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+  createParentPath: true,
+  limits: { 
+    fileSize: 5 * 1024 * 1024 // 5MB max file size
+  },
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'development' 
     ? 'http://localhost:5173' 
@@ -41,6 +49,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
