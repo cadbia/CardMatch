@@ -23,7 +23,7 @@ export const register = async (req, res, next) => {
         message: 'User already exists'
       });
     }
-
+    
     // Create user with preferences
     const user = await User.create({
       name,
