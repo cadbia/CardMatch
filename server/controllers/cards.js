@@ -1,4 +1,5 @@
 import Card from '../models/Card.js';
+import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';
 
 // @desc    Get all cards
@@ -44,6 +45,11 @@ export const getCard = async (req, res, next) => {
 // @desc    Get card recommendations for user
 // @route   GET /api/cards/recommendations
 // @access  Private
+
+//@ caden why does this not need a /:id?
+
+
+
 export const getRecommendations = async (req, res, next) => {
   try {
     // Get user
@@ -54,15 +60,84 @@ export const getRecommendations = async (req, res, next) => {
         message: 'User not found'
       });
     }
+    const Transactions = await Transaction.find({user: req.user.id});
+    //map of possible categories to a card category
+    const TransMap = new Map([
+      ['Groceries', 'Cash Back'],
+      ['Streaming Services', 'Cash Back'],
+      ['Ride Sharing', 'Travel'],
+      ['Streaming', 'Cash Back'],
+      ['Transit', 'Travel'],
+      ['Transfers','Low Interest'],
+      ['Shopping', 'Cash Back'],
+      ['Dining', 'Business'],
+      ['GoodWill', 'Building Credit'],
+      ['School','Student'],
+      ['Car Rental', 'Travel'],
+      ['Cash Withdrawal', 'Rewards'],
+      ['Charity', 'Low Interest'],
+      ['Cloud Storage', 'Low Interest'],
+      ['Deposit','Business'],
+      ['Dining','Rewards'],
+      ['Education','Student'],
+      ['Fitness','Rewards'],
+      ['Gas','Cach Back'],
+      ['Healthcare','Business'],
+      ['Hotels','Travel'],
+      ['Personal Care','Cash Back'],
+      ['Pharmacy','Low Interest'],
+      ['Phone & Internet','Low Interest'],
+      ['Software', 'Low Interest'],
+      ['Travel', 'Travel'],
+      ['Utilities', 'Low Interest']
+      
+      //'Travel', 'Cash Back', 'Business', 'Student', 'Rewards', 'Low Interest', 'Building Credit']
+    ]);
+    
+    //if user has transaction history, map the important transaction history to their respective values
+      
+    if(Transactions != null){
+      var TransactionPoints = new Map();
+      let amountTrans = await Transaction.countDocuments({user: req.user.id});
+     
+      //for each transaction, update the map with points for each noticed category. 
+      let totalSpent = 0;
+      let creditPurchases = 0;
+      
+      Transactions.forEach((trans)=>{
+        if(TransMap.has(trans.category)){
+          //this transactions category is able to be matched to a card category.
+          //console.log(TransactionPoints.get(TransMap.get(trans.category)));
+          if(!TransactionPoints.get(TransMap.get(trans.category))) {
+            TransactionPoints.set(TransMap.get(trans.category), 1);
+          }else{
+            TransactionPoints.set(TransMap.get(trans.category), TransactionPoints.get(TransMap.get(trans.category))+1);
 
+          }
+          
+        }
+        totalSpent += trans.amount;
+        
+        if(trans.isCredit == true) {
+          creditPurchases++;
+        }
+        
+       
+      })
+    
+      TransactionPoints.set("totalSpent", totalSpent);
+      if(creditPurchases !== 0) TransactionPoints.set("creditPurchases", creditPurchases/amountTrans);
+    
+    }
+    //console.log(TransactionPoints);
+    
     // Build query based on preferences
     const cards = async (user) => {
       let query = {};
 
       if (user.preferences.categories && user.preferences.categories.length > 0) {
         query.category = { $in: user.preferences.categories };
-      }
-
+      }      
       // Filter by credit score
       if (user.preferences.creditScoreRange) {
         // Map user's credit score to appropriate card requirements
@@ -90,6 +165,7 @@ export const getRecommendations = async (req, res, next) => {
     }
 
     const cardsData = await cards(user);
+
     // Calculate match score based on preferences and their rankings
     const recommendedCards = cardsData.map(card => {
       //Find valid categories, and map each key to a weight and value
@@ -109,7 +185,46 @@ export const getRecommendations = async (req, res, next) => {
           ValsToWeight.set(key, [rankedVal])
           amntPref++;
         }
+        
       })
+      //add a rank position for top 3 purchase categories
+      if(typeof(TransactionPoints)==='undefined'){
+        console.log("NO transactions found");
+      }else{
+       //if credit purchase amount is >75% add a rank position for rewards
+
+      //idk what to with the spending amount i calculated tbh
+        if(TransactionPoints.creditPurchases > .75){
+          //check if in 
+
+          ValsToWeight.set('categories', [ValsToWeight.get('categories')[0]+1])
+          user.preferences.categories.push('Rewards');
+          totalWeight++;
+        }
+
+        TransactionPoints.delete('totalSpent');
+        TransactionPoints.delete('creditPurchases');
+        const topPurchases = Array.from(TransactionPoints);
+        topPurchases.sort((a,b)=>{b-a});
+        for(let i = 0; i< 2; i++){
+          //validate if in the map first!
+          
+            ValsToWeight.set('categories', [ValsToWeight.get('categories')[0]+1]);
+            //if user.categores doesnt include this then add
+            
+            user.preferences.categories.push(topPurchases[i][0]);
+            totalWeight+=1;
+            if(topPurchases.length ==1) break;
+        }
+        
+      }
+      //testing for correct values
+      // console.log(totalWeight);
+      // console.log(ValsToWeight);
+
+      
+
+
 
       //pos 0 holds the amnt of ranked
       //update each key with its respective weight, in pos[1] of arr key
@@ -204,9 +319,7 @@ export const getRecommendations = async (req, res, next) => {
 
     // Sort by match score
     recommendedCards.sort((a, b) => b.matchScore - a.matchScore);
-    // for(let blah in recommendedCards){
-    //   console.log(recommendedCards[blah]);
-    // }
+  
     res.status(200).json({
       success: true,
       count: recommendedCards.length,
