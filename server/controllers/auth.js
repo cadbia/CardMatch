@@ -23,7 +23,7 @@ export const register = async (req, res, next) => {
         message: 'User already exists'
       });
     }
-
+    
     // Create user with preferences
     const user = await User.create({
       name,
@@ -40,7 +40,7 @@ export const register = async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
-
+    
     res.status(201).json({
       success: true,
       token,
@@ -63,6 +63,7 @@ export const register = async (req, res, next) => {
 // @access  Public
 export const login = async (req, res, next) => {
   try {
+    console.log("bug");
     const { email, password } = req.body;
 
     // Validate email & password

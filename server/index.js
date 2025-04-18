@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js';
 import cardRoutes from './routes/cards.js';
 import userRoutes from './routes/users.js';
 import transactionRoutes from './routes/transactions.js';
+import passwordResetRoutes from './routes/passwordReset.js';
 
 // Load environment variables
 dotenv.config();
@@ -50,7 +51,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionRoutes);
-
+app.use('/api/passwordReset', passwordResetRoutes);
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../dist')));
