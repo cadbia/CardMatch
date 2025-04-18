@@ -14,7 +14,9 @@ export const sendEmails = async(req, res, next)=>{
     try{
         console.log(req.body);
         //req body is the email??
-        const schema = Joi.object({email: Joi.string().email().required() });
+        const schema = Joi.object({
+            email: Joi.string().email().required()
+        });
         const { error } = schema.validate(req.body);
         if(error) return res.status(400).send(error.details[0].message);
         //or do i next the error??
