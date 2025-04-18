@@ -12,6 +12,7 @@ import crypto from 'crypto';
 //also why am i sending error to next whats handling it
 export const sendEmails = async(req, res, next)=>{
     try{
+        console.log(req.body);
         //req body is the email??
         const schema = Joi.object({email: Joi.string().email().required() });
         const { error } = schema.validate(req.body);

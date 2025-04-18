@@ -126,8 +126,8 @@ export const uploadTransactions = async (req, res) => {
 // @access  Private
 export const getTransactions = async (req, res, next) => {
   try {
-    console.log("HERe");
-    console.log(req.query);
+    console.log(req.body);
+    
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const startDate = req.query.startDate ? new Date(req.query.startDate) : null;

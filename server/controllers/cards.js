@@ -167,6 +167,8 @@ export const getRecommendations = async (req, res, next) => {
     const cardsData = await cards(user);
 
     // Calculate match score based on preferences and their rankings
+
+  
     const recommendedCards = cardsData.map(card => {
       //Find valid categories, and map each key to a weight and value
       let amntPref = 3;
@@ -206,16 +208,18 @@ export const getRecommendations = async (req, res, next) => {
         TransactionPoints.delete('creditPurchases');
         const topPurchases = Array.from(TransactionPoints);
         topPurchases.sort((a,b)=>{b-a});
+        if(topPurchases.length != 0){
         for(let i = 0; i< 2; i++){
           //validate if in the map first!
           
             ValsToWeight.set('categories', [ValsToWeight.get('categories')[0]+1]);
             //if user.categores doesnt include this then add
-            
+            console.log(topPurchases);
             user.preferences.categories.push(topPurchases[i][0]);
             totalWeight+=1;
             if(topPurchases.length ==1) break;
         }
+      }
         
       }
       //testing for correct values
