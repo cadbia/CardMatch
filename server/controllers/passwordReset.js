@@ -60,7 +60,7 @@ export const resetPass = async (req, res)=>{
 
         const token = await TokenfindOne({
             userid: user._id,
-            token: req.params.tokenm
+            token: req.params.token,
         });
         if (!token) return res.status(400).send("Invalid link or expired");
 
