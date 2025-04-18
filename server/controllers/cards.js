@@ -214,7 +214,7 @@ export const getRecommendations = async (req, res, next) => {
           
             ValsToWeight.set('categories', [ValsToWeight.get('categories')[0]+1]);
             //if user.categores doesnt include this then add
-            console.log(topPurchases);
+            //console.log(topPurchases);
             user.preferences.categories.push(topPurchases[i][0]);
             totalWeight+=1;
             if(topPurchases.length ==1) break;
