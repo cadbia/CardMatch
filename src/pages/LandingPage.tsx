@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { CreditCard, Shield, Zap } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const LandingPage = () => {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <div className="max-w-4xl mx-auto">
       <section className="text-center py-12">
@@ -11,10 +14,10 @@ const LandingPage = () => {
         </p>
         <div className="flex justify-center">
           <Link
-            to="/login"
+            to={isAuthenticated ? "/dashboard" : "/login"}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition duration-150 ease-in-out"
           >
-            Get Started
+            {isAuthenticated ? "View Dashboard" : "Get Started"}
           </Link>
         </div>
       </section>
