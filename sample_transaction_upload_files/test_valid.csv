@@ -1,0 +1,7 @@
+Date,Description,Category,Amount,Transaction Type,Account Name
+2025-03-25,Starbucks,Dining,-5.45,debit,Chase Sapphire Preferred
+2025-03-24,Amazon,Shopping,-42.99,debit,Chase Sapphire Preferred
+2025-03-23,Venmo Transfer,Transfer,150.0,credit,Bank of America Checking
+2025-03-22,Publix,Grocery,-76.2,debit,Bank of America Debit
+2025-03-21,Spotify,Entertainment,-9.99,debit,Chase Sapphire Preferred
+2025-03-20,Uber,Ride Sharing,-13.5,debit,Chase Sapphire Preferred

@@ -1,0 +1,7 @@
+Description,Transaction Type,Amount,Date,Notes,Category,Account Name
+Starbucks,debit,-5.45,2025-03-25,,Dining,Chase Sapphire Preferred
+Amazon,debit,-42.99,2025-03-24,Prime order,Shopping,Chase Sapphire Preferred
+Venmo Transfer,credit,150.0,2025-03-23,,Transfer,Bank of America Checking
+Publix,debit,-76.2,2025-03-22,Weekly grocery,Grocery,Bank of America Debit
+Spotify,debit,-9.99,2025-03-21,Monthly subscription,Entertainment,Chase Sapphire Preferred
+Uber,debit,-13.5,2025-03-20,Surge pricing,Ride Sharing,Chase Sapphire Preferred
