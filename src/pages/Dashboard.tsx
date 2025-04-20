@@ -3,6 +3,10 @@ import { CreditCard, RefreshCw, ArrowUp, ArrowDown, Trash2, AlertCircle } from '
 import { fetchDashboardData, getTransactions, updateTransactionCategory, deleteTransaction } from '../services/api';
 import { Card } from '../types';
 import TransactionUpload from '../components/TransactionUpload';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface Transaction {
   _id: string;
@@ -11,6 +15,10 @@ interface Transaction {
   amount: number;
   isCredit: boolean;
   category: string;
+}
+
+interface CategoryTotal {
+  [key: string]: number;
 }
 
 const CATEGORIES = [
@@ -39,6 +47,15 @@ const CATEGORIES = [
   'Utilities'
 ];
 
+const generateChartColors = (count: number) => {
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const hue = (i * 137.508) % 360;
+    colors.push(`hsl(${hue}, 70%, 60%)`);
+  }
+  return colors;
+};
+
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [cards, setCards] = useState<Card[]>([]);
@@ -51,6 +68,7 @@ const Dashboard = () => {
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const [categoryTotals, setCategoryTotals] = useState<CategoryTotal>({});
 
   const loadData = async () => {
     try {
@@ -66,21 +84,35 @@ const Dashboard = () => {
     }
   };
 
+  const calculateCategoryTotals = (transactions: Transaction[]) => {
+    const totals: CategoryTotal = {};
+    transactions.forEach(transaction => {
+      if (transaction.category !== 'Select Category' && !transaction.isCredit) {
+        totals[transaction.category] = (totals[transaction.category] || 0) + Math.abs(transaction.amount);
+      }
+    });
+    setCategoryTotals(totals);
+  };
+
   const loadTransactions = async (pageNum: number, append = false) => {
     try {
       setIsLoadingTransactions(true);
       const response = await getTransactions({ page: pageNum, limit: 10 });
       
-      // Transform transactions to ensure uncategorized ones show "Select Category"
       const transformedTransactions = response.data.map(transaction => ({
         ...transaction,
         category: transaction.category || 'Select Category'
       }));
       
       if (append) {
-        setTransactions(prev => [...prev, ...transformedTransactions]);
+        setTransactions(prev => {
+          const newTransactions = [...prev, ...transformedTransactions];
+          calculateCategoryTotals(newTransactions);
+          return newTransactions;
+        });
       } else {
         setTransactions(transformedTransactions);
+        calculateCategoryTotals(transformedTransactions);
       }
       
       setHasMore(response.data.length === 10);
@@ -90,6 +122,39 @@ const Dashboard = () => {
     } finally {
       setIsLoadingTransactions(false);
     }
+  };
+
+  const chartData = {
+    labels: Object.keys(categoryTotals),
+    datasets: [
+      {
+        data: Object.values(categoryTotals),
+        backgroundColor: generateChartColors(Object.keys(categoryTotals).length),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const value = Math.abs(context.raw);
+            return `$${value.toFixed(2)}`;
+          }
+        }
+      }
+    },
+    maintainAspectRatio: false,
   };
 
   const lastTransactionRef = useCallback((node: HTMLTableRowElement) => {
@@ -132,13 +197,12 @@ const Dashboard = () => {
 
   const handleCategoryChange = async (transactionId: string, newCategory: string) => {
     try {
-      // Don't update if "Select Category" is chosen
       if (newCategory === 'Select Category') {
         return;
       }
       
       await updateTransactionCategory(transactionId, newCategory);
-      loadTransactions(1); // Reload transactions to show updated category
+      loadTransactions(1);
     } catch (error) {
       console.error('Error updating category:', error);
     }
@@ -147,7 +211,7 @@ const Dashboard = () => {
   const handleDeleteTransaction = async (transactionId: string) => {
     try {
       await deleteTransaction(transactionId);
-      loadTransactions(1); // Reload transactions after deletion
+      loadTransactions(1);
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }
@@ -155,11 +219,11 @@ const Dashboard = () => {
 
   const handleClearHistory = async () => {
     try {
-      // Delete all transactions
       await Promise.all(transactions.map(t => deleteTransaction(t._id)));
-      setTransactions([]); // Clear the transactions array
-      setHasMore(false); // No more transactions to load
+      setTransactions([]);
+      setHasMore(false);
       setShowClearConfirm(false);
+      setCategoryTotals({});
     } catch (error) {
       console.error('Error clearing history:', error);
     }
@@ -237,7 +301,7 @@ const Dashboard = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
               {transactions.length > 0 && (
@@ -366,6 +430,19 @@ const Dashboard = () => {
                     <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Spending Breakdown</h2>
+            {Object.keys(categoryTotals).length === 0 ? (
+              <p className="text-gray-500 text-center py-8">
+                No categorized transactions to display.
+              </p>
+            ) : (
+              <div className="h-[400px]">
+                <Pie data={chartData} options={chartOptions} />
               </div>
             )}
           </div>
