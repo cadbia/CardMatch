@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef } from 'react';
 import { Upload, X, Check, AlertCircle } from 'lucide-react';
 import { uploadTransactions } from '../services/api';
