@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 10",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 3",
     "preview": "vite preview",
     "server": "node server/index.js",
     "dev:server": "nodemon server/index.js",
